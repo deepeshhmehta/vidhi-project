@@ -1,0 +1,19 @@
+
+;(function() {
+  var vantage = {
+    version: '0.1.2',
+    pixelId: '478795098990530',
+    platform: 'magento',
+    storeId: '11916',
+    storeName: 'ELTE',
+  };
+
+  var head = document.getElementsByTagName('head')[0];
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://dow068lag04cv.cloudfront.net/vantage-2.0-min.js';
+  script.async = true;
+  head.appendChild(script);
+
+  window.$vantage = vantage;
+})(window);

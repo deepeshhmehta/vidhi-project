@@ -1,0 +1,126 @@
+/**
+ * Magento Enterprise Edition
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Magento Enterprise Edition License
+ * that is bundled with this package in the file LICENSE_EE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://www.magentocommerce.com/license/enterprise-edition
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magentocommerce.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magentocommerce.com for more information.
+ *
+ * @category    design
+ * @package     enterprise_default
+ * @copyright   Copyright (c) 2013 Magento Inc. (http://www.magentocommerce.com)
+ * @license     http://www.magentocommerce.com/license/enterprise-edition
+ */
+*     { background:none !important; text-align:left !important; overflow: visible !important;}
+body  { background:#fff !important; font-size:9pt !important; margin:15px !important; }
+
+
+body,html {
+    display:block !important;
+}
+
+.header-container,
+#footer,
+.footer-container,
+.footer-before-container,
+.nav-menu-mobile,
+.footer-container,
+.widget,
+.pager,
+.toolbar,
+.actions,
+.buttons-set,
+.site-breadcrumbs,
+.pagination,
+.subheader-wrap{
+    display:none !important;
+}
+
+
+
+.catalog-product-view a.view-all,
+.catalog-product-view .add-to-box,
+.catalog-product-view .options-container-big{
+    display:none !important;
+}
+
+
+.page-print .data-table .cart-tax-total { background-position:100% -54px; }
+.page-print .data-table .cart-tax-info { display:block !important; }
+
+.product-view .product-img-box .product-image {
+    border: 0 !important;
+}
+
+.tab-container{
+    display: block !important;
+    margin: 0 !important;
+}
+
+.product-view .product-name h1{
+    margin-bottom: 20px !important;
+    margin-left: -15px !important;
+}
+
+.swiper-slide{
+    width: 150px !important;
+    display: inline-block !important;
+    margin-right: 10px !important;
+}
+
+.swiper-container{
+    border: 0 !important;
+    margin-left: 20px !important;
+}
+
+.tab-content,
+.tab-content p{
+    font-size: 9pt !important;
+}
+
+h1 {
+    margin-top: 20px !important;
+    page-break-before: avoid; !important
+}
+
+
+p a {
+    word-wrap: break-word;
+}
+
+.product-shop{
+    float: left !important;
+    margin: 0 !important;
+    clear: both !important;
+    overflow: hidden !important;
+}
+
+.price-box{
+    padding-top: 20px;
+    clear: both !important;
+}
+
+.wrapper{
+    height: auto !important;
+}
+
+#inner-wrap{
+    margin: 0 !important;
+    position: static !important;
+}
+
+.product-shop,
+.product-collateral{
+    margin-left: 0 !important;
+}

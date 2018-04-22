@@ -1,0 +1,614 @@
+var EasyColorSwatch = Class.create();
+EasyColorSwatch.prototype = {
+    initialize: function(config) {
+        this.options = config.options;
+        this.attribute = config.attribute;
+        this.attributeLabels = config.attributeLabels;
+        this.attrIds = config.attrIds;
+        this.optionsIds = config.optionsIds;
+        this.mediaAttributeUrl = config.mediaAttributeUrl;
+        this.attrSimpleImg = config.attrSimpleImg;
+        this.simpleImagePath = config.simpleImagePath;
+        this.simpleImageUrl = config.simpleImageUrl;
+        this.productId = config.productId;
+        this.mageVersion = config.mageVersion;
+        this.resizedImages = config.resizedImages;
+        this.showOptions = config.showOptions;
+        this.mediaTextUrl = config.mediaTextUrl;
+        this.showThumbnails = config.showThumbnails;
+        this.mediaUrl = config.mediaUrl;
+        this.mediaPictureUrl = config.mediaPictureUrl;
+        this.pictureWidth = config.pictureWidth;
+        this.pictureHeight = config.pictureHeight;
+        //this.checkByOutStock();
+        if (this.options && undefined == this.options.length) {
+            this.prepareMarkup();
+            this.attributeMode = false;
+        } else if (this.attribute && undefined == this.attribute.length){
+            this.prepareAttributeMarkup();
+            this.attributeMode = true;
+        } else {
+            return false;
+        }
+
+        this.prepareObserver();
+        this.firstItemFilterByOutStock();
+        var interval = setInterval(function() {
+            $$('.colorswatch-list').each(function(ul) {
+                if (ul.hasClassName('colorswatch-list-inactive')) {
+                    throw $break;
+                }
+                var attrId = ul.id.replace('colorswatch-attr-', '');
+                if ($('attribute' + attrId).select('option').length <= 1) {
+                    throw $break;
+                }
+                ul.select('li').each(function(li) {
+                    var valueId = li.id.replace('colorswatch-value-', '');
+                    var option = $('attribute' + attrId).down('option[value="'+ valueId +'"]');
+                    li.title = option ? option.text : '';
+                });
+                clearInterval(interval);
+            });
+        }, 500);
+    },
+
+    firstItemFilterByOutStock: function() {
+        var firstDD = $$('.product-options dd').first();
+        var firstUl = firstDD.down('ul.colorswatch-list');
+        if (firstUl) {
+            var select = firstDD.down('select');
+            firstUl.select('li').each(function(li) {
+                var option = select.down('option[value="' + li.id.replace('colorswatch-value-', '') + '"]');
+                li.removeClassName('easycolorswatches-out');
+                if (option) {
+                    li.title = option.text;
+                    li.show();
+                } else {
+                    li.addClassName('easycolorswatches-out');
+                }
+            });
+        }
+    },
+
+
+    prepareAttributeMarkup: function() {
+        var valuesList = '',
+            attrId = '',
+            options = '';
+
+        if (typeof this.attrIds[835] != 'undefined'){
+            attrId = 835;
+            options = this.attrIds[attrId];
+
+            if (this.showOptions == 0) {
+                $('attribute' + attrId).setStyle({
+                    'visibility': 'hidden',
+                    'position'  : 'absolute',
+                    'width'     : '0px',
+                    'height'    : '0px'
+                });
+            }
+            if (this.showThumbnails == 0) {
+                valuesList += '<ul class="colorswatch-list colorswatch-inactive" id="colorswatch-attr-'
+                    +attrId+'">';
+            } else {
+                valuesList += '<ul class="colorswatch-list" id="colorswatch-attr-'
+                    +attrId+'">';
+            }
+
+            for (var i = 0; i < options.length; i++) {
+                swatchesData = this.attribute[attrId][options[i]];
+
+                switch(swatchesData.type) {
+                    case '1':
+                        valuesList +=
+                            '<li id="colorswatch-value-'+options[i]+'"'
+                            + 'class="colorswatch-value colorswatch-value-image">'
+                            + '<img src="'+ this.mediaAttributeUrl + swatchesData.image +'" alt=""/>'
+                            + '</li>';
+                        break;
+                    case '2':
+                        valuesList +=
+                            '<li id="colorswatch-value-'+options[i]+'"'
+                            + 'class="colorswatch-value colorswatch-list-li"'
+                            + 'style="background-color: '
+                            + swatchesData.color
+                            + ';width:'+this.pictureWidth + 'px; height:' + this.pictureHeight + 'px;">&nbsp;</li>';
+                        break;
+                    case '3':
+                        valuesList +=
+                            '<li id="colorswatch-value-'+options[i]+'"'
+                            + 'class="colorswatch-value colorswatch-value-image colorswatch-value-text" '
+                            + '>'
+                            + '<span class="colorswatch-option-text">'+ this.attributeLabels[attrId][options[i]].label +'</span></li>';
+                        break;
+                }
+            }
+            valuesList += '</ul>';
+            $('attribute' + attrId).insert({before: valuesList});
+            valuesList = '';
+        }
+
+        this.addClassOpacity();
+    },
+
+    prepareMarkup: function() {
+        var valuesList = '';
+        var attributeIds = new Array();
+        var tmp = '';
+        var data = '';
+        var attrId = '';
+        var valueId = '';
+        var delimiter = ':';
+
+        for (var i=0; i<this.optionsIds.length; i++) {
+            tmp = this.optionsIds[i].split(',');
+            attributeIds.push(tmp[0]);
+        }
+        var attrData = attributeIds.uniq();
+        i = 0;
+        for (var i=0; i<attrData.length; i++) {
+            attrId = attrData[i];
+            if (this.showOptions == 0) {
+                $('attribute' + attrId).setStyle({
+                    'visibility': 'hidden',
+                    'position'  : 'absolute',
+                    'width'     : '0px',
+                    'height'    : '0px'
+                });
+            }
+            if (this.showThumbnails == 0) {
+                valuesList += '<ul class="colorswatch-list colorswatch-inactive" id="colorswatch-attr-'
+                    +attrId+'">';
+            } else {
+                valuesList += '<ul class="colorswatch-list" id="colorswatch-attr-'
+                    +attrId+'">';
+            }
+            for (var j=0; j<this.optionsIds.length; j++) {
+                data = this.optionsIds[j].split(',');
+                valueId = data[1];
+				if (typeof this.options[attrId][valueId] != 'object') {
+                    continue;
+                }
+
+                if (parseInt(data[0]) == parseInt(attrId)) {
+                    if ('0' !== this.options[attrId][valueId].colorSwatchType) {
+
+                        if (this.options[attrId][valueId].colorSwatchType == '3' && this.options[attrId][valueId].colorSwatchInProduct == '1') {
+                            valuesList +=
+                                '<li id="colorswatch-value-'+valueId+'"'
+                                + 'class="colorswatch-value colorswatch-value-image colorswatch-value-text" '
+                                + '>'
+                                + '<span class="colorswatch-option-text">'+ this.options[attrId][valueId].colorSwatchOptionText +'</span></li>';
+                        } else if (this.options[attrId][valueId].colorSwatchType == '1' && this.options[attrId][valueId].colorSwatchInProduct == '1') {
+                            valuesList +=
+                                '<li id="colorswatch-value-'+valueId+'"'
+                                + 'class="colorswatch-value colorswatch-list-li"'
+                                + 'style="background-color: '
+                                + this.options[attrId][valueId].colorSwatchColor
+                                + ';width:'+this.pictureWidth + 'px; height:' + this.pictureHeight + 'px;">&nbsp;</li>';
+                        } else if (this.options[attrId][valueId].colorSwatchType == '2' && this.options[attrId][valueId].colorSwatchInProduct == '1') {
+                            valuesList +=
+                                '<li id="colorswatch-value-'+valueId+'"'
+                                + 'class="colorswatch-value colorswatch-value-image">'
+                                + '<img src="'+ this.resizedImages[attrId+delimiter+valueId] +'" alt=""/>'
+                                + '</li>';
+                        }
+
+                    } else {
+                        if (this.options[attrId][valueId].colorSwatchUseText !== '0') {
+                            valuesList +=
+                                '<li id="colorswatch-value-'+valueId+'"'
+                                + 'class="colorswatch-value colorswatch-value-image colorswatch-value-text" '
+                                + '>'
+                                + '<span class="colorswatch-option-text">'+ this.options[attrId][valueId].colorSwatchOptionText +'</span></li>';
+                        } else if (this.options[attrId][valueId].colorSwatchPicture == null) {
+                            valuesList +=
+                                '<li id="colorswatch-value-'+valueId+'"'
+                                + 'class="colorswatch-value colorswatch-list-li"'
+                                + 'style="background-color: '
+                                + this.options[attrId][valueId].colorSwatchColor
+                                + ';width:'+this.pictureWidth + 'px; height:' + this.pictureHeight + 'px;">&nbsp;</li>';
+                        } else {
+                            valuesList +=
+                                '<li id="colorswatch-value-'+valueId+'"'
+                                + 'class="colorswatch-value colorswatch-value-image">'
+                                + '<img src="'+ this.resizedImages[attrId+delimiter+valueId] +'" alt=""/>'
+                                + '</li>';
+                        }
+                    }
+                }
+
+            }
+
+            valuesList += '</ul>';
+            $('attribute' + attrId).insert({before: valuesList});
+            valuesList = '';
+        }
+        this.addClassOpacity();
+    },
+
+    addClassOpacity: function() {
+        if (this.mageVersion) { return; }
+        var i = 0;
+        $$('#product-options-wrapper dd').each(function(el) {
+            if (el.down('ul') && el.down('ul').hasClassName('colorswatch-list')) {
+                el.down('ul').addClassName('colorswatch-list-active');
+            }
+
+            if (i > 0) {
+                if (el.down('ul') && el.down('ul').hasClassName('colorswatch-list')) {
+                    el.down('ul').addClassName('colorswatch-list-inactive');
+                }
+            }
+            i++;
+        });
+    },
+
+    activateNextAttribute: function(id) {
+        var self = this;
+        if (typeof id === 'string') {
+            var elementType = 'ul';
+        } else {
+            var elementType = 'select';
+            id = id.element().id;
+        }
+
+        $$('#product-options-wrapper dd').each(function(el){
+            if (elementType=='select'){
+                var currentOption = el.down(elementType).select('option').find(
+                    function(option) {
+                        return option.selected
+                    }
+                );
+            }
+            var dd = el.next('dd');
+            if (!dd) {
+                return;
+            }
+            var nextUl = dd.down('ul.colorswatch-list');
+            if (!nextUl) {
+                return;
+            }
+            if (!self.mageVersion) {
+                if ((elementType == 'select') && (currentOption.value == '')) {
+                    nextUl.addClassName('colorswatch-list-inactive');
+                    nextUl.removeClassName('colorswatch-list-active');
+                    nextUl.select('li').invoke('removeClassName', 'active');
+                } else {
+                    nextUl.removeClassName('colorswatch-list-inactive');
+                    nextUl.addClassName('colorswatch-list-active');
+                }
+            }
+        });
+    },
+
+    filterNextAttribute: function(e) {
+        var firstDD = e.element().up('dd');
+        var firstUl = firstDD ? firstDD.down('ul.colorswatch-list') : false;
+        if (firstUl) {
+            var select = firstDD.down('select');
+            firstUl.select('li').each(function(li) {
+                var option = select.down('option[value="' + li.id.replace('colorswatch-value-', '') + '"]');
+                li.removeClassName('easycolorswatches-out');
+                if (option) {
+                    li.title = option.text;
+                    li.show();
+                } else {
+                    li.addClassName('easycolorswatches-out');
+                }
+            });
+        }
+        if (this.mageVersion) { return; }
+        var nextDD = e.element().up('dd').next('dd');
+        var nextUl = nextDD ? nextDD.down('ul.colorswatch-list') : false;
+        if (nextUl) {
+            var select = nextDD.down('select');
+            nextUl.select('li').each(function(li) {
+                var option = select.down('option[value="' + li.id.replace('colorswatch-value-', '') + '"]');
+                li.removeClassName('active');
+                li.removeClassName('easycolorswatches-out');
+                if (option) {
+                    li.title = option.text;
+                    li.show();
+                } else {
+                    li.addClassName('easycolorswatches-out');
+                }
+            });
+        }
+    },
+
+    changeValue: function(e) {
+        var nextDD = e.element().up('dd');
+        while (nextDD.tagName != 'DD') {
+            nextDD = nextDD.up();
+        }
+        var nextUl = nextDD ? nextDD.down('ul.colorswatch-list') : false;
+
+        if (nextUl) {
+            var select = nextDD.down('select');
+
+            var ll = nextUl.select('li');
+
+            select.select('option').each(function(op){
+                if (op.selected) {
+                    var value = op.value;
+                    if (value != '') {
+                        var li = nextUl.down('li#colorswatch-value-' + value);
+                        attrId = li.up('ul').id.replace('colorswatch-attr-', '');
+                        attrValue = value;
+                        this.setActive(li);
+                        if (!this.attributeMode) {
+                            this.setImage(attrId, attrValue);
+                        } else {
+                            if ('1' == this.attrSimpleImg) {
+                                this.getSimpleImage();
+                            }
+                        }
+                    } else {
+                        this.unsetActive(ll);
+                    }
+                }
+            }, this);
+        }
+    },
+
+    prepareObserver: function(){
+        $$('.super-attribute-select').each(function(el) {
+            Event.observe(el, 'change', this.activateNextAttribute.bind(this));
+            Event.observe(el, 'change', this.changeValue.bind(this));
+            Event.observe(el, 'change', function(e) {
+                setTimeout(this.filterNextAttribute.bind(this, e), 5);
+            }.bind(this));
+        }.bind(this));
+
+        $$('.colorswatch-value').each(function(el) {
+            Event.observe(el, 'click', this.setValue.bind(this));
+        }.bind(this));
+    },
+
+    replaceImage: function() {
+        this.setValueToSelect();
+    },
+
+    setValue: function(e) {
+        var li = e.element();
+        if (li.tagName != 'LI') {
+            li = li.up('li');
+        }
+        var existopacity = li.up('ul').hasClassName('colorswatch-list-inactive');
+
+        if (existopacity) {
+            return;
+        }
+        this.setActive(li);
+        this.activateNextAttribute(li.up('ul').id);
+
+        var attrId = 0;
+        var attrValue = 0;
+
+        attrId = li.up('ul').id.replace('colorswatch-attr-', '');
+        attrValue = li.id.replace('colorswatch-value-', '');
+        $('attribute' + attrId).down('[value="' + attrValue + '"]')
+            && ($('attribute' + attrId).down('[value="' + attrValue + '"]').selected = 'selected');
+
+
+        var options = jQuery('.super-attribute-select');
+        if (options.length > 1) {
+            var nextOption = options[options.length - 1];
+
+            for(var i=0; i<options.length; i++){
+                var optionId = options[i].id.substr(9);
+                if(optionId == attrId){
+                    nextOption = options[i+1];
+                    break;
+                }
+            }
+            if (jQuery(li).hasClass('colorswatch-value')) {
+                spConfig.fillSelect(nextOption);
+                jQuery(nextOption).prop('disabled', false);
+                jQuery('.product-price-top').html(jQuery(nextOption).attr('data-priceRange'));
+                jQuery('.extra-info div.product-code').hide();
+                jQuery(nextOption).trigger('chosen:updated');
+                return;
+            }
+        }
+
+        this.fireEvent($('attribute' + attrId), 'change');
+
+    },
+
+    getSimpleImage: function() {
+        var elements = $$('div#product-options-wrapper select'),
+            productData = {},
+            attrId = null,
+            self = this,
+            changeImage = true;
+
+        elements.each(function(select){
+            if ('' !== $(select).getValue()) {
+                attrId = $(select).id.replace('attribute', '');
+                productData[attrId] = $(select).getValue();
+            }
+        });
+        if (changeImage) {
+            productData['p'] = this.productId;
+            new Ajax.Request(this.simpleImageUrl, {
+                method : 'get',
+                parameters: productData,
+                onSuccess : function(transport) {
+                    var response = transport.responseText.evalJSON();
+                    self.setSimpleImage(response);
+                },
+                onFailure: function(transport) {
+                    //error
+                }
+            });
+        }
+    },
+
+    setSimpleImage: function(response) {
+        if(typeof hs == 'object'){
+            var baseImage = $$('a.highslide img')[0],
+            baseLink = $$('a.highslide')[0];
+
+            baseImage.src = response.small;
+            baseLink.href = response.image;
+        } else {
+            var backgroundStyle = '';
+            $$(this.simpleImagePath)[0].src = response.small;
+            backgroundStyle = 'url('+response.image+')';
+            $$('div.zoomWindow')[0].setStyle({
+                backgroundImage: backgroundStyle
+            });
+        }
+    },
+
+    setImage: function(attrId, attrValue) {
+        var self = this;
+        if (typeof Prozoom === 'function') {
+            var a = $$('.prozoom-image')[0];
+            var links = $$('div.product-img-box a');
+            var i = 0;
+            var img = a.down();
+            var size = a.getDimensions();
+
+            var imgSrc = '';
+            while (links[i]) {
+                if (-1 != links[i].href.indexOf(this.options[attrId][attrValue].colorSwatchImage)) {
+                    imgSrc = links[i].href;
+                    break;
+                }
+                i++;
+            }
+            var image = new Element('img');
+            image.onload = function(){
+                if (parseInt(image.width) > parseInt(image.height)) {
+                    $('image').setStyle({
+                        'width': size.width + 'px',
+                        'height': ''
+                    });
+                } else {
+                    $('image').setStyle({
+                        'height': size.height + 'px',
+                        'width': ''
+                    });
+                }
+                if (null !== self.options[attrId][attrValue].colorSwatchImage) {
+		    if (a.href == imgSrc) {
+                    } else {
+                        a.href = imgSrc;
+		            $('image').onload = function() {
+		            };
+		            $('image').src = imgSrc;
+                    }
+
+                } else {
+                }
+            };
+            image.src = imgSrc;
+
+        } else if (typeof Lightbox === 'function') {
+            var a = $$('div.product-img-box a');
+            var img = $$('div.product-img-box img');
+
+            if (null !== this.options[attrId][attrValue].colorSwatchImage) {
+                var i = 0;
+                var oldImg = '';
+                var oldLink = '';
+                var newImage = '';
+                var oldSize = '';
+                var newSize = '';
+
+                while (a[i]) {
+                    if (-1 != a[i].href.indexOf(this.options[attrId][attrValue].colorSwatchImage)) {
+                        oldImg      = img[0].src;
+                        oldLink     = a[0].href;
+                        newImage    = a[i].href;
+                        oldSize     = img[i].getDimensions();
+                        newSize     = img[0].getDimensions();
+                        break;
+                    }
+                    i++;
+                }
+
+                if (img[i].getWidth() > img[i].getHeight()) {
+                    img[i].setStyle({
+                        'width': oldSize.width + 'px'
+                    });
+                } else {
+                    img[i].setStyle({
+                        'height': oldSize.height + 'px'
+                    });
+                }
+
+                if (img[0].getWidth() > img[0].getHeight()) {
+                    img[0].setStyle({
+                        'width': newSize.width + 'px'
+                    });
+                } else {
+                    img[0].setStyle({
+                        'width': newSize.width + 'px'
+                    });
+                }
+
+
+                a[0].href = newImage;
+                img[0].onload = function() {
+                };
+                img[0].src = newImage;
+                a[i].href = oldLink;
+                img[i].src = oldImg;
+            }
+        } else if(typeof hs == 'object'){
+            var baseImage = $$('a.highslide img')[0],
+            baseLink = $$('a.highslide')[0],
+            moreViews = $$('div.more-views img');
+
+            moreViews.each(function(img){
+                if (-1 !== img.src.indexOf(self.options[attrId][attrValue].colorSwatchImage)) {
+                    baseImage.src = img.up().href;
+                    baseLink.href = img.up().href;
+                }
+            });
+        } else {
+            if (null !== this.options[attrId][attrValue].colorSwatchImage) {
+                var moreImg = $$('ul.product-image-thumbs img');
+                moreImg.each(function(img){
+                    if (-1 !== img.src.indexOf(self.options[attrId][attrValue].colorSwatchImage)) {
+                        self.fireEvent(img, 'click');
+                    }
+                });
+            }
+        }
+    },
+
+    setActive: function(li) {
+        li.siblings().invoke('removeClassName', 'active');
+        li.addClassName('active');
+    },
+
+    unsetActive: function(ll) {
+        ll.each(function(li){
+            li.siblings().invoke('removeClassName', 'active');
+        });
+    },
+
+    fireEvent: function(element,event) {
+        Object.extend(Prototype.Browser, {
+            ie6: (/MSIE (\d+\.\d+);/.test(navigator.userAgent)) ? (Number(RegExp.$1) == 6 ? true : false) : false,
+            ie7: (/MSIE (\d+\.\d+);/.test(navigator.userAgent)) ? (Number(RegExp.$1) == 7 ? true : false) : false,
+            ie8: (/MSIE (\d+\.\d+);/.test(navigator.userAgent)) ? (Number(RegExp.$1) == 8 ? true : false) : false,
+            ie9: (/MSIE (\d+\.\d+);/.test(navigator.userAgent)) ? (Number(RegExp.$1) == 9 ? true : false) : false
+        });
+        if (document.createEventObject && (Prototype.Browser.ie6 || Prototype.Browser.ie7 || Prototype.Browser.ie8)) {
+            var evt = document.createEventObject();
+            return element.fireEvent('on'+event,evt)
+        }
+        else{
+            var evt = document.createEvent("HTMLEvents");
+            evt.initEvent(event, true, true );
+            return !element.dispatchEvent(evt);
+        }
+    }
+};
